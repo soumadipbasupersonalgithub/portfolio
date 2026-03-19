@@ -405,61 +405,23 @@ animatedElements.forEach(el => {
   animationObserver.observe(el);
 });
 
-// EmailJS Contact Form Implementation
+// Web3Forms Contact Form Implementation
 if (form) {
-  // EmailJS Configuration - Your actual credentials
-  const EMAILJS_CONFIG = {
-    publicKey: 'hf3NIKh30eJc8CihT',
-    serviceId: 'service_toq11u8',
-    templateId: 'template_j3m9bcp'
-  };
-
-  // Initialize EmailJS immediately
-  function initializeEmailJS() {
-    if (typeof emailjs !== 'undefined') {
-      try {
-        emailjs.init(EMAILJS_CONFIG.publicKey);
-        console.log('EmailJS initialized successfully');
-        return true;
-      } catch (error) {
-        console.error('EmailJS initialization failed:', error);
-        return false;
-      }
-    } else {
-      console.error('EmailJS library not loaded');
-      return false;
-    }
-  }
-
-  // Initialize EmailJS on DOM ready
-  document.addEventListener('DOMContentLoaded', initializeEmailJS);
-
-  // Also try immediate initialization
-  initializeEmailJS();
+  const WEB3FORMS_KEY = 'cb382b6c-8698-4bd2-b664-25db5bb22cfb';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    console.log('Form submitted'); // Debug log
-    console.log('User agent:', navigator.userAgent); // Mobile debug
-    console.log('Screen width:', window.innerWidth); // Mobile debug
-
-    const formData = new FormData(form);
     const submitBtn = form.querySelector('button[type="submit"]');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
     const formStatus = document.getElementById('form-status');
 
-    // Get form values
-    const name = formData.get('from_name');
-    const email = formData.get('from_email');
-    const message = formData.get('message');
+    const name = form.querySelector('#name').value.trim();
+    const email = form.querySelector('#email').value.trim();
+    const message = form.querySelector('#message').value.trim();
 
-    console.log('Form data:', { name, email, message }); // Debug log
-
-    // Validate form data
     if (!name || !email || !message) {
-      console.error('Missing form data');
       if (formStatus) {
         formStatus.className = 'form-status error';
         formStatus.textContent = '❌ Please fill in all fields.';
@@ -472,157 +434,52 @@ if (form) {
     submitBtn.disabled = true;
     if (btnText) btnText.style.display = 'none';
     if (btnLoading) btnLoading.style.display = 'inline';
-    if (formStatus) {
-      formStatus.className = 'form-status';
-      formStatus.style.display = 'none';
-    }
+    if (formStatus) formStatus.style.display = 'none';
 
     try {
-      // Ensure EmailJS is initialized
-      if (!initializeEmailJS()) {
-        throw new Error('EmailJS not initialized');
-      }
+      // Send via Web3Forms (triggers email notification)
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `Portfolio Contact: ${name}`,
+          from_name: name,
+          email: email,
+          message: message
+        })
+      });
 
-      // Prepare email template parameters
-      const templateParams = {
-        from_name: name,
-        from_email: email,
-        message: message,
-        to_email: 'soumadipbasu111@gmail.com',
-        reply_to: email
-      };
+      const result = await response.json();
 
-      console.log('Sending email with params:', templateParams); // Debug log
-
-      // Send email via EmailJS with better error handling
-      let response;
-      try {
-        response = await emailjs.send(
-          EMAILJS_CONFIG.serviceId,
-          EMAILJS_CONFIG.templateId,
-          templateParams
-        );
-      } catch (emailError) {
-        // Try alternative method if first attempt fails
-        console.log('First attempt failed, trying sendForm method:', emailError);
-        response = await emailjs.sendForm(
-          EMAILJS_CONFIG.serviceId,
-          EMAILJS_CONFIG.templateId,
-          form
-        );
-      }
-
-      console.log('EmailJS response:', response); // Debug log
-
-      if (response.status === 200) {
-        // Success
+      if (result.success) {
         if (formStatus) {
           formStatus.className = 'form-status success';
           formStatus.textContent = '✅ Message sent successfully! I will get back to you soon.';
           formStatus.style.display = 'block';
         }
         form.reset();
-        console.log('Email sent successfully');
       } else {
-        throw new Error(`EmailJS returned status: ${response.status}`);
+        throw new Error(result.message || 'Submission failed');
       }
 
     } catch (error) {
-      console.error('EmailJS Error:', error);
+      console.error('Form submission error:', error);
       if (formStatus) {
         formStatus.className = 'form-status error';
-        formStatus.textContent = `❌ Failed to send message: ${error.message}. Please try again or contact me directly at soumadipbasu333@gmail.com`;
+        formStatus.textContent = '❌ Failed to send message. Please try again or contact me directly at soumadipbasu333@gmail.com';
         formStatus.style.display = 'block';
       }
     } finally {
-      // Reset button state
       submitBtn.disabled = false;
       if (btnText) btnText.style.display = 'inline';
       if (btnLoading) btnLoading.style.display = 'none';
 
-      // Hide status message after 7 seconds
       setTimeout(() => {
-        if (formStatus) {
-          formStatus.style.display = 'none';
-        }
+        if (formStatus) formStatus.style.display = 'none';
       }, 7000);
     }
   });
-
-  // Test EmailJS connection (for debugging)
-  window.testEmailJS = async function() {
-    try {
-      console.log('Testing EmailJS connection...');
-      const testParams = {
-        from_name: 'Test User',
-        from_email: 'test@example.com',
-        message: 'This is a test message',
-        to_email: 'soumadipbasu333@gmail.com',
-        reply_to: 'test@example.com'
-      };
-
-      const response = await emailjs.send(
-        EMAILJS_CONFIG.serviceId,
-        EMAILJS_CONFIG.templateId,
-        testParams
-      );
-
-      console.log('Test email sent successfully:', response);
-      return response;
-    } catch (error) {
-      console.error('Test email failed:', error);
-      return error;
-    }
-  };
-
-  // Mobile-specific submit button handler
-  if (window.innerWidth <= 768 || 'ontouchstart' in window) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
-      // Mobile touch handling for submit button
-      submitBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        console.log('Mobile submit button touched');
-
-        // Trigger form submission
-        const submitEvent = new Event('submit', {
-          bubbles: true,
-          cancelable: true
-        });
-        form.dispatchEvent(submitEvent);
-      }, { passive: false });
-
-      // Fallback click handler for mobile
-      submitBtn.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768) {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Mobile submit button clicked');
-
-          // Trigger form submission
-          const submitEvent = new Event('submit', {
-            bubbles: true,
-            cancelable: true
-          });
-          form.dispatchEvent(submitEvent);
-        }
-      });
-
-      // Add visual feedback for mobile
-      submitBtn.addEventListener('touchstart', (e) => {
-        submitBtn.style.transform = 'scale(0.95)';
-        submitBtn.style.transition = 'transform 0.1s ease';
-      }, { passive: true });
-
-      submitBtn.addEventListener('touchend', () => {
-        setTimeout(() => {
-          submitBtn.style.transform = '';
-        }, 100);
-      }, { passive: true });
-    }
-  }
 }
 
 // Cursor trail effect (optional enhancement)
