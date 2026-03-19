@@ -8,9 +8,16 @@
     <link rel="icon" type="image/svg+xml" href="/portfolio-icon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- EmailJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+    <!-- Inline script to prevent FOUC on dark theme -->
+    <script>
+      (function() {
+        const theme = localStorage.getItem('portfolio-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
   </head>
   <body>
     <!-- Navigation -->
@@ -39,16 +46,35 @@
             <a href="#contact" class="nav-link">Contact</a>
           </li>
         </ul>
-        <div class="hamburger">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
+        <div class="nav-right">
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+            <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
+      <canvas id="heroCanvas" class="hero-canvas"></canvas>
       <div class="hero-container">
         <div class="hero-content">
           <div class="hero-text">
@@ -85,6 +111,12 @@
       </div>
     </section>
 
+    <div class="section-divider divider-hero-about">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-fill" d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/>
+      </svg>
+    </div>
+
     <!-- About Section -->
     <section id="about" class="about">
       <div class="container">
@@ -98,16 +130,16 @@
                 <p class="about-description">
                 <strong>Quality Assurance Professional</strong> with <strong>Bachelor's & Diploma in Electronics & Communications Engineering</strong> from Maulana Abul Kalam Azad University of Technology in 2017. Specializing in automated test scripts writing for mobile and web applications.
               </p>
-              
+
               <p class="about-description">
                 My career has evolved from <strong>functional testing and quality validation</strong> at Sonim Technologies to architecting comprehensive automation frameworks at Alethea Communication Pvt Ltd, and currently advancing to develop sophisticated automation solutions while integrating <strong>cutting-edge Generative AI technologies</strong> for intelligent test case generation, synthetic data creation, and workflow optimization to maximize testing efficiency and reliability.
               </p>
-              
+
               <p class="about-description">
                 Expert in transforming testing processes through automation frameworks under agile methodologies, and integrating technologies & tools in testing to deliver bulletproof software solutions.
               </p>
             </div>
-            
+
             <div class="about-stats">
               <div class="stat-item">
                 <span class="stat-number">6+</span>
@@ -122,7 +154,7 @@
                 <span class="stat-label">Projects Delivered</span>
               </div>
             </div>
-            
+
             <div class="cv-download-section">
               <div class="cv-card">
                 <div class="cv-icon">
@@ -174,6 +206,12 @@
       </div>
     </section>
 
+    <div class="section-divider flip divider-about-skills">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-fill" d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/>
+      </svg>
+    </div>
+
     <!-- Skills Section -->
     <section id="skills" class="skills">
       <div class="container">
@@ -216,6 +254,12 @@
       </div>
     </section>
 
+    <div class="section-divider divider-skills-certs">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-fill" d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/>
+      </svg>
+    </div>
+
     <!-- Certifications Section -->
     <section id="certifications" class="certifications">
       <div class="container">
@@ -224,6 +268,49 @@
           <p class="section-subtitle">Validated expertise and continuous learning journey</p>
         </div>
         <div class="certifications-grid">
+          <div class="certificate-card">
+            <div class="certificate-header">
+              <div class="certificate-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="certificate-status">
+                <span class="status-badge verified">
+                  <svg class="checkmark-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" fill="#10b981" stroke="#059669"/>
+                    <path d="m9 12 2 2 4-4" stroke="white" stroke-width="2.5"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <div class="certificate-content">
+              <h3 class="certificate-title">Playwright 101 Certification</h3>
+              <p class="certificate-issuer">TestMu AI</p>
+              <p class="certificate-date">Issued: March 2026</p>
+              <p class="certificate-date">Valid until: March 2028</p>
+              <p class="certificate-description">Playwright 101 certification validating proficiency in modern end-to-end browser automation testing with Playwright.</p>
+            </div>
+            <div class="certificate-actions">
+              <a href="https://www.testmuai.com/certified/P101-3593BG/" class="certificate-link" target="_blank" rel="noopener noreferrer">
+                <span>View Certificate</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <button class="certificate-verify" data-cert-id="playwright-001">
+                <span>Verify</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
           <div class="certificate-card">
             <div class="certificate-header">
               <div class="certificate-icon">
@@ -491,6 +578,12 @@
       </div>
     </section>
 
+    <div class="section-divider flip divider-certs-projects">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-fill" d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/>
+      </svg>
+    </div>
+
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
@@ -500,7 +593,11 @@
         </div>
         <div class="projects-grid">
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-sdk">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="12" y1="2" x2="12" y2="22" opacity="0.4"></line></svg>
+                <span class="icon-label">SDK</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="healthcare-frameworks">Details</a>
@@ -508,14 +605,18 @@
               </div>
             </div>
             <div class="project-content">
-                <h3 class="project-title">📦 SDK Validation Framework</h3>
+                <h3 class="project-title">SDK Validation Framework</h3>
               <p class="project-description">
                 A backend SDK framework designed for various patient-facing applications UI, facilitating smart device connectivity and synchronization of medicine records using Bluetooth Low Energy (BLE) technology.
               </p>
             </div>
           </div>
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-healthcare">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                <span class="icon-label">Health</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="healthcare-suite">Details</a>
@@ -523,14 +624,18 @@
               </div>
             </div>
             <div class="project-content">
-              <h3 class="project-title">📊 Hypercare, Madelyn & Logbook</h3>
+              <h3 class="project-title">Hypercare, Madelyn & Logbook</h3>
               <p class="project-description">
                 A suite of Healthcare mobile applications for medicine record management and patient health monitoring, with automated tracking and reporting features.
               </p>
             </div>
           </div>
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-dotcom">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <span class="icon-label">Web</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="dotcom">Details</a>
@@ -538,14 +643,18 @@
               </div>
             </div>
             <div class="project-content">
-              <h3 class="project-title">🌐 Dotcom</h3>
+              <h3 class="project-title">Dotcom</h3>
               <p class="project-description">
                 An enterprise healthcare web portal designed for patients to access reliable information about a wide range of health and care services. The platform features detailed resources on multiple diseases, including their care options, various medications, and support services.
               </p>
             </div>
           </div>
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-cloud">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                <span class="icon-label">Cloud</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="cloud-atf">Details</a>
@@ -553,14 +662,18 @@
               </div>
             </div>
             <div class="project-content">
-              <h3 class="project-title">☁️ Cloud ATF</h3>
+              <h3 class="project-title">Cloud ATF</h3>
               <p class="project-description">
                 An advanced automated solution for WLAN and broadband technologies with high-volume device testing refers to a comprehensive platform designed to rigorously test wireless (Wi-Fi, WLAN) and broadband ( wireless broadband, gateways, routers) devices at scale.
               </p>
             </div>
           </div>
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-autosense">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                <span class="icon-label">ML</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="sms-autosense">Details</a>
@@ -568,14 +681,18 @@
               </div>
             </div>
             <div class="project-content">
-              <h3 class="project-title">🤖 SMS Autosense</h3>
+              <h3 class="project-title">SMS Autosense</h3>
               <p class="project-description">
                 A machine learning-driven mobile application for industrial environments enables continuous monitoring, tracking, and reporting of machine controller APIs & industrial sensor feeds (e.g., temperature, vibration, error codes, operating hours).
               </p>
             </div>
           </div>
           <div class="project-card">
-            <div class="project-image">
+            <div class="project-image project-img-devices">
+              <div class="project-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span class="icon-label">Mobile</span>
+              </div>
               <div class="project-overlay">
                 <div class="project-links">
                   <a href="#" class="project-link" data-project="mobile-devices">Details</a>
@@ -583,7 +700,7 @@
               </div>
             </div>
             <div class="project-content">
-              <h3 class="project-title">📱 XP8 & XP5</h3>
+              <h3 class="project-title">XP8 & XP5</h3>
               <p class="project-description">
                 Rugged Android smartphones designed for critical industrial environments are engineered to withstand extreme conditions, such as shock, drop, temperature fluctuations, vibration, and exposure to dust and water. These devices typically feature military-grade durability certifications
               </p>
@@ -592,6 +709,12 @@
         </div>
       </div>
     </section>
+
+    <div class="section-divider divider-projects-contact">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-fill" d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/>
+      </svg>
+    </div>
 
     <!-- Contact Section -->
     <section id="contact" class="contact">
@@ -603,21 +726,35 @@
         <div class="contact-content">
           <div class="contact-info">
             <div class="contact-item">
-              <div class="contact-icon">📧</div>
+              <div class="contact-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
               <div class="contact-details">
                 <h4>Email</h4>
                 <p>soumadipbasu333@gmail.com</p>
               </div>
             </div>
             <div class="contact-item">
-              <div class="contact-icon">📱</div>
+              <div class="contact-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
               <div class="contact-details">
                 <h4>Phone</h4>
                 <p>+91 9851824880</p>
               </div>
             </div>
             <div class="contact-item">
-              <div class="contact-icon">📍</div>
+              <div class="contact-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
               <div class="contact-details">
                 <h4>Location</h4>
                 <p>Bengaluru, India</p>
@@ -668,10 +805,26 @@
     <footer class="footer">
       <div class="container">
         <div class="footer-content">
-          <p>&copy;Copyright 2025 • Soumadip Basu • All rights reserved</p>
+          <div class="footer-brand">
+            <span class="footer-logo">Portfolio</span>
+            <p class="footer-tagline">Crafting quality through innovation</p>
+          </div>
           <div class="social-links">
-            <a href="https://github.com/soumadipbasupersonalgithub" class="social-link" target="_blank" rel="noopener noreferrer" id="github-link">GitHub</a>
-            <a href="https://www.linkedin.com/in/soumadip-basu-b47160197/" class="social-link" target="_blank" rel="noopener noreferrer" id="linkedin-link">LinkedIn</a>
+            <a href="https://github.com/soumadipbasupersonalgithub" class="social-link" target="_blank" rel="noopener noreferrer" id="github-link" aria-label="GitHub">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+              </svg>
+              <span>GitHub</span>
+            </a>
+            <a href="https://www.linkedin.com/in/soumadip-basu-b47160197/" class="social-link" target="_blank" rel="noopener noreferrer" id="linkedin-link" aria-label="LinkedIn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+              <span>LinkedIn</span>
+            </a>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2025 Soumadip Basu. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -679,16 +832,23 @@
 
     <!-- Floating CV Download Button -->
     <div class="cv-fab">
-      <a href="/soumadip_basu_cv.pdf" class="fab-button" download title="Download CV">
+      <a href="soumadip_basu_cv.pdf" class="fab-button" download="Soumadip_Basu_Resume.pdf" title="Download Resume">
         <svg class="fab-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7,10 12,15 17,10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        <span class="fab-text">CV</span>
-        <span class="fab-tooltip">Download CV</span>
+        <span class="fab-text">Resume</span>
+        <span class="fab-tooltip">Download Resume</span>
       </a>
     </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
 
     <script type="module" src="/src/main.js"></script>
   </body>

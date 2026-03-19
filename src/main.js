@@ -1,5 +1,174 @@
 import './style.css'
 
+// ============================================
+// THEME TOGGLE SYSTEM
+// ============================================
+const initThemeToggle = () => {
+  const toggle = document.getElementById('themeToggle');
+  if (!toggle) return;
+
+  const getTheme = () => localStorage.getItem('portfolio-theme') || 'light';
+  const setTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('portfolio-theme', theme);
+  };
+
+  // Set initial state
+  setTheme(getTheme());
+
+  toggle.addEventListener('click', () => {
+    const next = getTheme() === 'light' ? 'dark' : 'light';
+    setTheme(next);
+  });
+};
+initThemeToggle();
+
+// ============================================
+// SCROLL TO TOP BUTTON
+// ============================================
+const initScrollTop = () => {
+  const btn = document.getElementById('scrollTop');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+};
+initScrollTop();
+
+// ============================================
+// ANIMATED HERO CANVAS (particles + connections)
+// ============================================
+const initHeroCanvas = () => {
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animId;
+  let mouse = { x: null, y: null };
+
+  const resize = () => {
+    const hero = canvas.parentElement;
+    canvas.width = hero.offsetWidth;
+    canvas.height = hero.offsetHeight;
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      this.r = Math.random() * 2 + 1;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+      // Mouse repulsion
+      if (mouse.x !== null) {
+        const dx = this.x - mouse.x;
+        const dy = this.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          this.x += dx / dist * 1.5;
+          this.y += dy / dist * 1.5;
+        }
+      }
+    }
+    draw() {
+      const dark = isDark();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = dark
+        ? `rgba(129, 140, 248, ${0.3 + this.r * 0.15})`
+        : `rgba(99, 102, 241, ${0.25 + this.r * 0.1})`;
+      ctx.fill();
+    }
+  }
+
+  const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 12000));
+  for (let i = 0; i < count; i++) particles.push(new Particle());
+
+  const animate = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const dark = isDark();
+
+    particles.forEach(p => { p.update(); p.draw(); });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = dark
+            ? `rgba(129, 140, 248, ${0.08 * (1 - dist / 150)})`
+            : `rgba(99, 102, 241, ${0.06 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    animId = requestAnimationFrame(animate);
+  };
+  animate();
+
+  canvas.parentElement.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+  canvas.parentElement.addEventListener('mouseleave', () => {
+    mouse.x = null;
+    mouse.y = null;
+  });
+};
+// Only init on desktop for perf
+if (window.innerWidth > 768 && !('ontouchstart' in window)) {
+  initHeroCanvas();
+}
+
+// ============================================
+// ENHANCED SCROLL REVEAL
+// ============================================
+const initScrollReveal = () => {
+  const revealElements = document.querySelectorAll(
+    '.section-header, .about-text, .about-image, .skill-card, .certificate-card, .project-card, .contact-info, .form-section'
+  );
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  revealElements.forEach(el => revealObserver.observe(el));
+};
+initScrollReveal();
+
 // Immediate fix for loading scrollbar issue
 (function() {
   // Apply initial styles to prevent scrollbar during load
@@ -49,31 +218,48 @@ hamburger.addEventListener('click', () => {
 
 // Close mobile menu when clicking on a link
 navLinks.forEach(link => {
-  link.addEventListener('click', () => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const targetId = link.getAttribute('href');
+    const targetSection = document.querySelector(targetId);
+
+    // Close mobile menu
     hamburger.classList.remove('active');
     navMenu.classList.remove('active');
+
+    if (targetSection) {
+      // Brief delay so menu closes before scroll calculation
+      setTimeout(() => {
+        const navHeight = navbar.offsetHeight;
+        const targetPosition = targetSection.offsetTop - navHeight;
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+
+        // Update active link
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      }, 150);
+    }
   });
 });
 
-// CV Download Functionality with Color Change
+// CV FAB Button - Launch animation feedback
 if (cvButton) {
-  cvButton.addEventListener('click', (e) => {
-    // Add downloaded state to button
-    cvButton.classList.add('downloaded');
-    
-    // Optional: Add success feedback
+  cvButton.addEventListener('click', () => {
+    cvButton.classList.add('launched');
+
     const fabText = cvButton.querySelector('.fab-text');
     const originalText = fabText.textContent;
-    
-    // Temporarily change text to indicate success
-    fabText.textContent = '✓';
-    
-    // Reset text after 2 seconds
+    fabText.textContent = '✓ Done';
+
+    const icon = cvButton.querySelector('.fab-icon');
+    if (icon) icon.style.animation = 'iconBounceDown 0.5s ease';
+
     setTimeout(() => {
       fabText.textContent = originalText;
-    }, 2000);
-    
-    console.log('CV download initiated - button color changed to green');
+      cvButton.classList.remove('launched');
+      if (icon) icon.style.animation = '';
+    }, 2500);
   });
 }
 
@@ -82,301 +268,20 @@ function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 }
 
-// Simple and reliable navigation for both desktop and mobile
-navLinks.forEach(link => {
-  const scrollToSection = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const targetId = link.getAttribute('href');
-    const targetSection = document.querySelector(targetId);
-    
-    console.log('Navigation clicked:', targetId);
-    
-    if (targetSection) {
-      // Close mobile menu immediately
-      hamburger.classList.remove('active');
-      navMenu.classList.remove('active');
-      
-      // Wait a bit for menu to close on mobile
-      const delay = isMobileDevice() ? 300 : 0;
-      
-      setTimeout(() => {
-        if (isMobileDevice()) {
-          // Mobile-specific scroll handling
-          console.log('Mobile scroll to:', targetId);
-          
-          // Method 1: Try simple offset calculation
-          const rect = targetSection.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const targetPosition = rect.top + scrollTop - 90; // Extra space for mobile
-          
-          // Use different scroll methods based on browser support
-          if ('scrollBehavior' in document.documentElement.style) {
-            window.scrollTo({
-              top: targetPosition,
-              behavior: 'smooth'
-            });
-          } else {
-            // Fallback for older mobile browsers
-            window.scrollTo(0, targetPosition);
-          }
-          
-        } else {
-          // Desktop scroll
-          const targetPosition = targetSection.offsetTop - 80;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
-          });
-        }
-        
-        // Update active link
-        navLinks.forEach(navLink => navLink.classList.remove('active'));
-        link.classList.add('active');
-        
-      }, delay);
-    }
-  };
-  
-  // Handle clicks
-  link.addEventListener('click', scrollToSection);
-  
-  // Special mobile handling
-  if (isMobileDevice()) {
-    // Remove default touch behaviors that might interfere
-    link.style.touchAction = 'manipulation';
-    
-    // Add mobile-specific touch handling
-    link.addEventListener('touchstart', (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-    
-    link.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('Mobile touch end on:', link.textContent);
-      scrollToSection(e);
-    }, { passive: false });
-  }
-});
-
-// Handle Hero Buttons (Check Out My Craft & Get in Touch) with enhanced mobile touch detection
+// Handle Hero Buttons (Check Out My Craft & Get in Touch)
 heroButtons.forEach(button => {
-  // Touch tracking variables for each button
-  let touchStartTime = 0;
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let hasMoved = false;
-  let isLongPress = false;
-  let touchTimer = null;
-  let isScrolling = false;
-  
-  const scrollToSection = (e) => {
+  button.addEventListener('click', (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    
+
     const targetId = button.getAttribute('href');
     const targetSection = document.querySelector(targetId);
-    
-    console.log('Hero button clicked:', targetId);
-    
+
     if (targetSection) {
-      if (isMobileDevice()) {
-        // Mobile-specific scroll handling
-        console.log('Mobile scroll to:', targetId);
-        
-        const rect = targetSection.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = rect.top + scrollTop - 90; // Extra space for mobile
-        
-        if ('scrollBehavior' in document.documentElement.style) {
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
-          });
-        } else {
-          // Fallback for older mobile browsers
-          window.scrollTo(0, targetPosition);
-        }
-        
-      } else {
-        // Desktop scroll
-        const targetPosition = targetSection.offsetTop - 80;
-        window.scrollTo({
-          top: targetPosition,
-          behavior: 'smooth'
-        });
-      }
+      const navHeight = navbar.offsetHeight;
+      const targetPosition = targetSection.offsetTop - navHeight;
+      window.scrollTo({ top: targetPosition, behavior: 'smooth' });
     }
-  };
-  
-  // Desktop click handler (simple and direct)
-  if (!isMobileDevice()) {
-    button.addEventListener('click', scrollToSection);
-  } else {
-    // Enhanced mobile touch handling with scroll detection
-    
-    // Touch start - initialize tracking
-    button.addEventListener('touchstart', (e) => {
-      touchStartTime = Date.now();
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      hasMoved = false;
-      isLongPress = false;
-      isScrolling = false;
-      
-      // Visual feedback
-      button.style.transform = 'scale(0.95)';
-      button.style.transition = 'transform 0.1s ease';
-      
-      // Long press detection
-      touchTimer = setTimeout(() => {
-        isLongPress = true;
-        // Haptic feedback for long press
-        if (navigator.vibrate) {
-          navigator.vibrate([50, 30, 50]);
-        }
-      }, 500);
-      
-      // Don't prevent default - allow scrolling to continue naturally
-    }, { passive: true });
-    
-    // Touch move - detect scrolling vs button interaction
-    button.addEventListener('touchmove', (e) => {
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      
-      const deltaX = Math.abs(currentX - touchStartX);
-      const deltaY = Math.abs(currentY - touchStartY);
-      const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
-      // If user moves more than 15px, consider it scrolling/movement
-      if (totalMovement > 15) {
-        hasMoved = true;
-        isScrolling = true;
-        
-        // Remove visual feedback immediately
-        button.style.transform = '';
-        
-        // Clear long press timer
-        if (touchTimer) {
-          clearTimeout(touchTimer);
-          touchTimer = null;
-        }
-      }
-      
-      // Specifically detect vertical scrolling (primary concern)
-      if (deltaY > 20 && deltaY > deltaX) {
-        isScrolling = true;
-        hasMoved = true;
-      }
-    }, { passive: true });
-    
-    // Touch end - determine if this should trigger navigation
-    button.addEventListener('touchend', (e) => {
-      const touchDuration = Date.now() - touchStartTime;
-      
-      // Clear long press timer
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-      
-      // Reset visual feedback
-      setTimeout(() => {
-        button.style.transform = '';
-      }, 100);
-      
-      // Strict criteria for valid tap:
-      // 1. No significant movement (< 10px)
-      // 2. Not scrolling
-      // 3. Reasonable tap duration (50ms - 800ms)
-      // 4. Not a long press
-      const isValidTap = (
-        !hasMoved && 
-        !isScrolling && 
-        touchDuration >= 50 && 
-        touchDuration <= 800 && 
-        !isLongPress
-      );
-      
-      console.log('Touch end analysis:', {
-        hasMoved,
-        isScrolling,
-        touchDuration,
-        isLongPress,
-        isValidTap
-      });
-      
-      if (isValidTap) {
-        // This is a genuine tap - proceed with navigation
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Add confirmation feedback
-        button.style.transform = 'scale(1.05)';
-        setTimeout(() => {
-          button.style.transform = '';
-        }, 150);
-        
-        // Short haptic feedback for confirmation
-        if (navigator.vibrate) {
-          navigator.vibrate(40);
-        }
-        
-        console.log('Valid tap detected - navigating to:', button.getAttribute('href'));
-        
-        // Small delay to show feedback, then navigate
-        setTimeout(() => {
-          scrollToSection(e);
-        }, 50);
-      } else {
-        // Invalid tap - likely accidental during scroll
-        console.log('Invalid tap ignored - likely accidental scroll interaction');
-        
-        // Optional: Brief visual indication that tap was ignored
-        button.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-        setTimeout(() => {
-          button.style.borderColor = '';
-        }, 200);
-      }
-      
-      // Reset all tracking variables
-      touchStartTime = 0;
-      touchStartX = 0;
-      touchStartY = 0;
-      hasMoved = false;
-      isLongPress = false;
-      isScrolling = false;
-    }, { passive: false });
-    
-    // Touch cancel - clean up
-    button.addEventListener('touchcancel', () => {
-      // Clear all states
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-      
-      button.style.transform = '';
-      
-      // Reset tracking variables
-      touchStartTime = 0;
-      touchStartX = 0;
-      touchStartY = 0;
-      hasMoved = false;
-      isLongPress = false;
-      isScrolling = false;
-    }, { passive: true });
-    
-    // Override click events on mobile to prevent double triggering
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      // Mobile clicks are handled by touch events only
-    });
-  }
+  });
 });
 
 // Active navigation link highlighting
@@ -388,7 +293,7 @@ const observerOptions = {
 const observer = new IntersectionObserver((entries) => {
   let maxRatio = 0;
   let activeEntry = null;
-  
+
   // Find the section with highest intersection ratio
   entries.forEach(entry => {
     if (entry.intersectionRatio > maxRatio) {
@@ -396,14 +301,14 @@ const observer = new IntersectionObserver((entries) => {
       activeEntry = entry;
     }
   });
-  
+
   // Update active nav link only if we have a clear winner
   if (activeEntry && maxRatio > 0.1) {
     // Remove active class from all nav links
     navLinks.forEach(link => {
       link.classList.remove('active');
     });
-    
+
     // Add active class to current section's nav link
     const activeLink = document.querySelector(`.nav-link[href="#${activeEntry.target.id}"]`);
     if (activeLink) {
@@ -422,11 +327,11 @@ window.addEventListener('scroll', () => {
   const scrolled = window.pageYOffset;
   const heroVisual = document.querySelector('.hero-visual');
   const heroContent = document.querySelector('.hero-text');
-  
+
   if (heroVisual && heroContent) {
     const rate = scrolled * -0.5;
     heroVisual.style.transform = `translateY(${rate}px)`;
-    
+
     // Fade effect - but exclude buttons on mobile to prevent blur
     const opacity = 1 - scrolled / window.innerHeight;
     if (opacity >= 0) {
@@ -435,7 +340,7 @@ window.addEventListener('scroll', () => {
         const heroTitle = heroContent.querySelector('.hero-title');
         const heroDescription = heroContent.querySelector('.hero-description');
         const heroButtons = heroContent.querySelector('.hero-buttons');
-        
+
         if (heroTitle) heroTitle.style.opacity = opacity;
         if (heroDescription) heroDescription.style.opacity = opacity;
         // Keep buttons fully visible on mobile with additional properties
@@ -456,14 +361,14 @@ window.addEventListener('scroll', () => {
 // Animated counters for stats
 const animateCounters = () => {
   const counters = document.querySelectorAll('.stat-number');
-  
+
   counters.forEach(counter => {
     const originalText = counter.textContent;
     const target = parseInt(originalText);
     const hasPlus = originalText.includes('+');
     const increment = target / 100;
     let current = 0;
-    
+
     const updateCounter = () => {
       if (current < target) {
         current += increment;
@@ -473,7 +378,7 @@ const animateCounters = () => {
         counter.textContent = target + (hasPlus ? '+' : '');
       }
     };
-    
+
     updateCounter();
   });
 };
@@ -483,7 +388,7 @@ const animationObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('animate');
-      
+
       // Trigger counter animation for stats section
       if (entry.target.classList.contains('about-stats')) {
         animateCounters();
@@ -528,30 +433,30 @@ if (form) {
 
   // Initialize EmailJS on DOM ready
   document.addEventListener('DOMContentLoaded', initializeEmailJS);
-  
+
   // Also try immediate initialization
   initializeEmailJS();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     console.log('Form submitted'); // Debug log
     console.log('User agent:', navigator.userAgent); // Mobile debug
     console.log('Screen width:', window.innerWidth); // Mobile debug
-    
+
     const formData = new FormData(form);
     const submitBtn = form.querySelector('button[type="submit"]');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
     const formStatus = document.getElementById('form-status');
-    
+
     // Get form values
     const name = formData.get('from_name');
     const email = formData.get('from_email');
     const message = formData.get('message');
-    
+
     console.log('Form data:', { name, email, message }); // Debug log
-    
+
     // Validate form data
     if (!name || !email || !message) {
       console.error('Missing form data');
@@ -562,7 +467,7 @@ if (form) {
       }
       return;
     }
-    
+
     // Show loading state
     submitBtn.disabled = true;
     if (btnText) btnText.style.display = 'none';
@@ -571,13 +476,13 @@ if (form) {
       formStatus.className = 'form-status';
       formStatus.style.display = 'none';
     }
-    
+
     try {
       // Ensure EmailJS is initialized
       if (!initializeEmailJS()) {
         throw new Error('EmailJS not initialized');
       }
-      
+
       // Prepare email template parameters
       const templateParams = {
         from_name: name,
@@ -586,9 +491,9 @@ if (form) {
         to_email: 'soumadipbasu111@gmail.com',
         reply_to: email
       };
-      
+
       console.log('Sending email with params:', templateParams); // Debug log
-      
+
       // Send email via EmailJS with better error handling
       let response;
       try {
@@ -606,9 +511,9 @@ if (form) {
           form
         );
       }
-      
+
       console.log('EmailJS response:', response); // Debug log
-      
+
       if (response.status === 200) {
         // Success
         if (formStatus) {
@@ -621,7 +526,7 @@ if (form) {
       } else {
         throw new Error(`EmailJS returned status: ${response.status}`);
       }
-      
+
     } catch (error) {
       console.error('EmailJS Error:', error);
       if (formStatus) {
@@ -634,7 +539,7 @@ if (form) {
       submitBtn.disabled = false;
       if (btnText) btnText.style.display = 'inline';
       if (btnLoading) btnLoading.style.display = 'none';
-      
+
       // Hide status message after 7 seconds
       setTimeout(() => {
         if (formStatus) {
@@ -655,13 +560,13 @@ if (form) {
         to_email: 'soumadipbasu333@gmail.com',
         reply_to: 'test@example.com'
       };
-      
+
       const response = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
         EMAILJS_CONFIG.templateId,
         testParams
       );
-      
+
       console.log('Test email sent successfully:', response);
       return response;
     } catch (error) {
@@ -669,7 +574,7 @@ if (form) {
       return error;
     }
   };
-  
+
   // Mobile-specific submit button handler
   if (window.innerWidth <= 768 || 'ontouchstart' in window) {
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -678,9 +583,9 @@ if (form) {
       submitBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         console.log('Mobile submit button touched');
-        
+
         // Trigger form submission
         const submitEvent = new Event('submit', {
           bubbles: true,
@@ -688,14 +593,14 @@ if (form) {
         });
         form.dispatchEvent(submitEvent);
       }, { passive: false });
-      
+
       // Fallback click handler for mobile
       submitBtn.addEventListener('click', (e) => {
         if (window.innerWidth <= 768) {
           e.preventDefault();
           e.stopPropagation();
           console.log('Mobile submit button clicked');
-          
+
           // Trigger form submission
           const submitEvent = new Event('submit', {
             bubbles: true,
@@ -704,13 +609,13 @@ if (form) {
           form.dispatchEvent(submitEvent);
         }
       });
-      
+
       // Add visual feedback for mobile
       submitBtn.addEventListener('touchstart', (e) => {
         submitBtn.style.transform = 'scale(0.95)';
         submitBtn.style.transition = 'transform 0.1s ease';
       }, { passive: true });
-      
+
       submitBtn.addEventListener('touchend', () => {
         setTimeout(() => {
           submitBtn.style.transform = '';
@@ -724,7 +629,7 @@ if (form) {
 const createCursorTrail = () => {
   const trail = [];
   const trailLength = 10;
-  
+
   for (let i = 0; i < trailLength; i++) {
     const dot = document.createElement('div');
     dot.className = 'cursor-trail';
@@ -742,32 +647,32 @@ const createCursorTrail = () => {
     document.body.appendChild(dot);
     trail.push(dot);
   }
-  
+
   let mouseX = 0;
   let mouseY = 0;
-  
+
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
   });
-  
+
   const animateTrail = () => {
     let x = mouseX;
     let y = mouseY;
-    
+
     trail.forEach((dot, index) => {
       const nextDot = trail[index + 1] || trail[0];
-      
+
       dot.style.left = x + 'px';
       dot.style.top = y + 'px';
-      
+
       x += (parseInt(nextDot.style.left) || mouseX - x) * 0.3;
       y += (parseInt(nextDot.style.top) || mouseY - y) * 0.3;
     });
-    
+
     requestAnimationFrame(animateTrail);
   };
-  
+
   animateTrail();
 };
 
@@ -779,7 +684,7 @@ if (window.innerWidth > 768 && !('ontouchstart' in window)) {
 // Loading animation
 window.addEventListener('load', () => {
   document.body.classList.add('loaded');
-  
+
   // Trigger initial animations
   setTimeout(() => {
     const heroElements = document.querySelectorAll('.hero-title .title-line, .hero-description, .hero-buttons');
@@ -806,7 +711,7 @@ window.addEventListener('scroll', () => {
   if (scrollTimeout) {
     window.cancelAnimationFrame(scrollTimeout);
   }
-  
+
   scrollTimeout = window.requestAnimationFrame(() => {
     // Scroll-based animations here
   });
@@ -820,12 +725,12 @@ const addMicroAnimations = () => {
     btn.addEventListener('mouseenter', () => {
       btn.style.transform = 'translateY(-2px) scale(1.02)';
     });
-    
+
     btn.addEventListener('mouseleave', () => {
       btn.style.transform = '';
     });
   });
-  
+
   // Card tilt effect
   const cards = document.querySelectorAll('.skill-card, .project-card');
   cards.forEach(card => {
@@ -833,16 +738,16 @@ const addMicroAnimations = () => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      
+
       const rotateX = (y - centerY) / 10;
       const rotateY = (centerX - x) / 10;
-      
+
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
     });
-    
+
     card.addEventListener('mouseleave', () => {
       card.style.transform = '';
     });
@@ -857,71 +762,61 @@ const addMobileHoverEffects = () => {
       // Navigation
       { selector: '.nav-logo .logo-text', duration: 200 },
       { selector: '.nav-link', duration: 300 },
-      
+
       // Buttons
       { selector: '.btn', duration: 200 },
-      
+
       // Hero section
       { selector: '.floating-card', duration: 400 },
       { selector: '.professional-photo', duration: 300 },
-      
+
       // About section
       { selector: '.stat-item', duration: 300 },
       { selector: '.image-card', duration: 400 },
-      
+
       // Skills section
       { selector: '.skill-card', duration: 400 },
-      
+
       // Projects section
       { selector: '.project-card', duration: 400 },
       { selector: '.project-link', duration: 200 },
       { selector: '.tech-tag', duration: 200 },
-      
+
       // Contact section
       { selector: '.contact-item', duration: 300 },
-      
+
       // Footer
       { selector: '.social-link', duration: 200 }
     ];
 
     hoverElements.forEach(({ selector, duration }) => {
       const elements = document.querySelectorAll(selector);
-      
+
       elements.forEach(element => {
         let touchTimer;
-        
-        // Touch start - add hover effect
-        element.addEventListener('touchstart', (e) => {
-          // Don't prevent default for form submit buttons
-          if (!element.matches('button[type="submit"]')) {
-            e.preventDefault();
-          }
+
+        // Touch start - add hover effect (passive, never block clicks)
+        element.addEventListener('touchstart', () => {
           element.classList.add('mobile-hover');
-          
-          // Vibration feedback for supported devices
+
           if (navigator.vibrate) {
             navigator.vibrate(30);
           }
-        }, { passive: false });
-        
-        // Touch end - remove hover effect after delay
-        element.addEventListener('touchend', (e) => {
-          // Don't prevent default for form submit buttons
-          if (!element.matches('button[type="submit"]')) {
-            e.preventDefault();
-          }
-          
+        }, { passive: true });
+
+        // Touch end - remove hover effect after delay (passive)
+        element.addEventListener('touchend', () => {
           touchTimer = setTimeout(() => {
             element.classList.remove('mobile-hover');
           }, duration);
-        }, { passive: false });
-        
+        }, { passive: true });
+
         // Touch cancel - immediately remove hover effect
         element.addEventListener('touchcancel', () => {
           clearTimeout(touchTimer);
           element.classList.remove('mobile-hover');
         });
-        
+
         // Handle click for interactive elements
         if (selector.includes('nav-link') || selector.includes('btn') || selector.includes('project-link') || selector.includes('social-link')) {
           element.addEventListener('click', (e) => {
@@ -934,19 +829,19 @@ const addMobileHoverEffects = () => {
         }
       });
     });
-    
+
     // Special handling for project cards overlay
     const projectCards = document.querySelectorAll('.project-card');
     projectCards.forEach(card => {
       const overlay = card.querySelector('.project-overlay');
       const links = card.querySelectorAll('.project-link');
-      
+
       card.addEventListener('touchstart', () => {
         if (overlay) {
           overlay.style.opacity = '1';
         }
       });
-      
+
       card.addEventListener('touchend', () => {
         setTimeout(() => {
           if (overlay) {
@@ -955,39 +850,39 @@ const addMobileHoverEffects = () => {
         }, 2000);
       });
     });
-    
+
     // Enhanced skill card mobile touch handling
     const skillCards = document.querySelectorAll('.skill-card');
     skillCards.forEach(card => {
       const skillIcon = card.querySelector('.skill-icon');
       let touchTimer;
-      
+
       card.addEventListener('touchstart', (e) => {
         // Don't prevent default to allow scrolling
         card.classList.add('mobile-hover');
-        
+
         // Add haptic feedback
         if (navigator.vibrate) {
           navigator.vibrate(30);
         }
-        
+
         // Clear any existing timer
         clearTimeout(touchTimer);
       }, { passive: true });
-      
+
       card.addEventListener('touchend', (e) => {
         // Keep the effect for a bit longer for visual feedback
         touchTimer = setTimeout(() => {
           card.classList.remove('mobile-hover');
         }, 500);
       }, { passive: true });
-      
+
       // Handle touch cancel (when user scrolls or touches elsewhere)
       card.addEventListener('touchcancel', () => {
         clearTimeout(touchTimer);
         card.classList.remove('mobile-hover');
       }, { passive: true });
-      
+
       // Handle touch move (if user starts scrolling)
       card.addEventListener('touchmove', () => {
         clearTimeout(touchTimer);
@@ -1009,7 +904,7 @@ addMobileHoverEffects();
 const debugMobileTouch = () => {
   if (window.innerWidth <= 768) {
     console.log('Mobile view detected - touch events enabled');
-    
+
     // Add visual feedback to confirm touch events are working
     document.addEventListener('touchstart', (e) => {
       const skillCard = e.target.closest('.skill-card');
@@ -1029,277 +924,18 @@ window.addEventListener('resize', () => {
   document.querySelectorAll('.mobile-hover').forEach(el => {
     el.classList.remove('mobile-hover');
   });
-  
+
   // Re-initialize if switched to mobile view
   addMobileHoverEffects();
 });
 
 console.log('Portfolio loaded successfully! ✨');
 
-// CV Download Functionality - Enhanced Security Solution
-const initializeCVDownload = () => {
-  const downloadCVBtn = document.getElementById('downloadCV');
-  
-  if (downloadCVBtn) {
-    const handleCVDownload = async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      console.log('CV download initiated');
-      
-      try {
-        // Method 1: Use secure download endpoint (primary method)
-        const response = await fetch('/download-cv');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.style.display = 'none';
-        link.href = url;
-        link.download = 'soumadip_basu_cv.pdf';
-        
-        // Add to DOM, click, and clean up
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up the blob URL
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        
-        console.log('CV download completed successfully via secure endpoint');
-        
-        // Show success feedback
-        showDownloadFeedback('Downloaded!', 'success');
-        
-      } catch (error) {
-        console.error('Secure endpoint failed, trying alternative method:', error);
-        
-        // Method 2: Fetch and create blob from public file (fallback)
-        try {
-          const response = await fetch('/soumadip_basu_cv.pdf');
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          
-          // Create download link
-          const link = document.createElement('a');
-          link.style.display = 'none';
-          link.href = url;
-          link.download = 'soumadip_basu_cv.pdf';
-          
-          // Add to DOM, click, and clean up
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Clean up the blob URL
-          setTimeout(() => window.URL.revokeObjectURL(url), 100);
-          
-          console.log('CV download completed successfully via blob method');
-          
-          // Show success feedback
-          showDownloadFeedback('Downloaded!', 'success');
-        
-      } catch (error) {
-        console.error('Primary download method failed:', error);
-        
-        // Fallback Method 2: Direct link with proper headers
-        try {
-          const link = document.createElement('a');
-          link.href = `${window.location.origin}/soumadip_basu_cv.pdf`;
-          link.download = 'soumadip_basu_cv.pdf';
-          link.setAttribute('target', '_self'); // Force same origin
-          link.setAttribute('rel', 'noopener');
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          showDownloadFeedback('Downloaded!', 'success');
-          
-        } catch (fallbackError) {
-          console.error('Fallback method failed:', fallbackError);
-          
-          // Final Fallback Method 3: Open in new tab with instructions
-          try {
-            const newWindow = window.open(`${window.location.origin}/soumadip_basu_cv.pdf`, '_blank');
-            
-            if (newWindow) {
-              showDownloadFeedback('Opened in new tab', 'info');
-              
-              // Show user instructions
-              setTimeout(() => {
-                alert('PDF opened in new tab. Right-click and select "Save As" to download.');
-              }, 1000);
-            } else {
-              throw new Error('Popup blocked');
-            }
-            
-          } catch (finalError) {
-            console.error('All download methods failed:', finalError);
-            showDownloadFeedback('Download failed - Try right-click', 'error');
-            
-            // Show manual instructions
-            setTimeout(() => {
-              alert('Download blocked by browser. Please right-click the "Download CV" button and select "Save link as" or contact me directly for the CV.');
-            }, 500);
-          }
-        }
-      }
-      }
-    };
-    
-    // Feedback function
-    const showDownloadFeedback = (message, type) => {
-      const originalText = downloadCVBtn.textContent;
-      downloadCVBtn.textContent = message;
-      
-      // Color coding based on type
-      switch (type) {
-        case 'success':
-          downloadCVBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-          break;
-        case 'error':
-          downloadCVBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-          break;
-        case 'info':
-          downloadCVBtn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
-          break;
-      }
-      
-      setTimeout(() => {
-        downloadCVBtn.textContent = originalText;
-        downloadCVBtn.style.background = '';
-      }, type === 'error' ? 4000 : 2000);
-    };
-    
-    // Add right-click context menu option
-    downloadCVBtn.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      
-      // Create custom context menu for download
-      const contextMenu = document.createElement('div');
-      contextMenu.style.cssText = `
-        position: fixed;
-        top: ${e.clientY}px;
-        left: ${e.clientX}px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        font-family: var(--font-primary);
-        min-width: 160px;
-      `;
-      
-      contextMenu.innerHTML = `
-        <div style="padding: 8px 12px; cursor: pointer; border-radius: 4px;" 
-             onmouseover="this.style.background='#f3f4f6'" 
-             onmouseout="this.style.background=''"
-             onclick="window.open('${window.location.origin}/soumadip_basu_cv.pdf', '_blank')">
-          📄 Open CV in New Tab
-        </div>
-        <div style="padding: 8px 12px; cursor: pointer; border-radius: 4px;" 
-             onmouseover="this.style.background='#f3f4f6'" 
-             onmouseout="this.style.background=''"
-             onclick="navigator.clipboard.writeText('${window.location.origin}/soumadip_basu_cv.pdf').then(() => alert('CV link copied to clipboard!'))">
-          🔗 Copy CV Link
-        </div>
-      `;
-      
-      document.body.appendChild(contextMenu);
-      
-      // Remove context menu when clicking elsewhere
-      const removeMenu = () => {
-        if (document.body.contains(contextMenu)) {
-          document.body.removeChild(contextMenu);
-        }
-        document.removeEventListener('click', removeMenu);
-      };
-      
-      setTimeout(() => document.addEventListener('click', removeMenu), 100);
-    });
-    
-    // Desktop click handler
-    downloadCVBtn.addEventListener('click', handleCVDownload);
-    
-    // Mobile touch handler
-    downloadCVBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleCVDownload(e);
-    }, { passive: false });
-    
-    console.log('Enhanced CV download functionality initialized');
-  } else {
-    console.error('Download CV button not found');
-  }
-};
-
-// Initialize CV download on DOM ready
-document.addEventListener('DOMContentLoaded', initializeCVDownload);
-
-// Also try immediate initialization
-initializeCVDownload();
-
-// Initialize View Resume button with same functionality
-const initializeViewResume = () => {
-  const viewResumeBtn = document.getElementById('viewResumeBtn');
-  
-  if (viewResumeBtn) {
-    const handleViewResume = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Open PDF in new tab for viewing
-      try {
-        const newWindow = window.open('/soumadip_basu_cv.pdf', '_blank', 'noopener,noreferrer');
-        
-        if (!newWindow) {
-          // Fallback if popup blocked
-          window.location.href = '/soumadip_basu_cv.pdf';
-        }
-        
-        console.log('Resume opened for viewing');
-        
-      } catch (error) {
-        console.error('Error opening resume:', error);
-        // Last resort fallback
-        window.location.href = '/soumadip_basu_cv.pdf';
-      }
-    };
-    
-    viewResumeBtn.addEventListener('click', handleViewResume);
-    viewResumeBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleViewResume(e);
-    }, { passive: false });
-    
-    console.log('View Resume functionality initialized');
-  }
-};
-
-// Initialize View Resume button
-document.addEventListener('DOMContentLoaded', initializeViewResume);
-initializeViewResume();
-
 // Debug function for mobile testing
 window.debugMobileForm = function() {
   const form = document.querySelector('.contact-form');
   const submitBtn = form?.querySelector('button[type="submit"]');
-  
+
   console.log('=== Mobile Form Debug ===');
   console.log('Form element:', form);
   console.log('Submit button:', submitBtn);
@@ -1309,7 +945,7 @@ window.debugMobileForm = function() {
   console.log('Window width:', window.innerWidth);
   console.log('Touch support:', 'ontouchstart' in window);
   console.log('EmailJS loaded:', typeof emailjs !== 'undefined');
-  
+
   if (submitBtn) {
     console.log('Button styles:', {
       pointerEvents: getComputedStyle(submitBtn).pointerEvents,
@@ -1319,7 +955,7 @@ window.debugMobileForm = function() {
       zIndex: getComputedStyle(submitBtn).zIndex
     });
   }
-  
+
   // Test form submission manually
   if (form && submitBtn) {
     console.log('Testing manual form submission...');
@@ -1335,16 +971,16 @@ window.debugMobileForm = function() {
 function initializeMobileFooterLinks() {
   const githubLink = document.getElementById('github-link');
   const linkedinLink = document.getElementById('linkedin-link');
-  
+
   // Function to handle link navigation on mobile
   function handleMobileLinkClick(url, linkName) {
     console.log(`${linkName} link clicked on mobile`);
-    
+
     // Open in new tab only - no current tab navigation
     try {
       // Method 1: window.open (most reliable for mobile)
       const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-      
+
       // Method 2: Only if window.open completely fails, try alternative approach
       if (!newWindow) {
         console.log('Window.open failed, trying alternative method');
@@ -1369,12 +1005,12 @@ function initializeMobileFooterLinks() {
       document.body.removeChild(tempLink);
     }
   }
-  
+
   // Enhanced click handlers for mobile
   if (githubLink) {
     // Remove any existing event listeners
     githubLink.removeEventListener('click', () => {});
-    
+
     // Add comprehensive mobile click handling
     githubLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1382,7 +1018,7 @@ function initializeMobileFooterLinks() {
       console.log('GitHub link clicked');
       handleMobileLinkClick('https://github.com/soumadipbasupersonalgithub', 'GitHub');
     });
-    
+
     // Mobile touch handling
     githubLink.addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -1391,11 +1027,11 @@ function initializeMobileFooterLinks() {
       handleMobileLinkClick('https://github.com/soumadipbasupersonalgithub', 'GitHub');
     }, { passive: false });
   }
-  
+
   if (linkedinLink) {
     // Remove any existing event listeners
     linkedinLink.removeEventListener('click', () => {});
-    
+
     // Add comprehensive mobile click handling
     linkedinLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1403,7 +1039,7 @@ function initializeMobileFooterLinks() {
       console.log('LinkedIn link clicked');
       handleMobileLinkClick('https://www.linkedin.com/in/soumadip-basu-b47160197/', 'LinkedIn');
     });
-    
+
     // Mobile touch handling
     linkedinLink.addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -1510,7 +1146,7 @@ function openProjectModal(projectKey) {
           ${project.overview}
         </div>
       </div>
-      
+
       <div class="project-sections">
         <div class="project-section">
           <h3 class="project-section-title">🛠️ Tools & Technologies</h3>
@@ -1526,15 +1162,15 @@ function openProjectModal(projectKey) {
 
   modalContent.innerHTML = modalHTML;
   modal.style.display = 'block';
-  
+
   // Trigger animation
   setTimeout(() => {
     modal.classList.add('show');
   }, 10);
-  
+
   // Prevent body scroll when modal is open
   document.body.style.overflow = 'hidden';
-  
+
   // Push a history state so the back button closes the modal instead of navigating away
   window.history.pushState({ modalOpen: true, projectKey: projectKey }, '', window.location.href);
 }
@@ -1545,7 +1181,7 @@ function closeProjectModal() {
   setTimeout(() => {
     modal.style.display = 'none';
     document.body.style.overflow = '';
-    
+
     // Remove the history state if it was created by modal
     if (window.history.state && window.history.state.modalOpen) {
       window.history.back();
@@ -1590,7 +1226,7 @@ document.addEventListener('touchend', (e) => {
 function addFlipEffect(card) {
   // Add flip class
   card.classList.add('card-flipping');
-  
+
   // Remove the class after animation completes
   setTimeout(() => {
     card.classList.remove('card-flipping');
@@ -1601,19 +1237,19 @@ function addFlipEffect(card) {
 function createRippleEffect(element, event) {
   const ripple = document.createElement('div');
   ripple.classList.add('ripple');
-  
+
   const rect = element.getBoundingClientRect();
   const size = Math.max(rect.width, rect.height);
   const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left - size / 2;
   const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top - size / 2;
-  
+
   ripple.style.width = ripple.style.height = size + 'px';
   ripple.style.left = x + 'px';
   ripple.style.top = y + 'px';
-  
+
   element.style.position = 'relative';
   element.appendChild(ripple);
-  
+
   setTimeout(() => {
     if (ripple.parentNode) {
       ripple.parentNode.removeChild(ripple);
@@ -1680,7 +1316,7 @@ window.addEventListener('popstate', (event) => {
       document.body.style.overflow = '';
     }, 300);
   }
-  
+
   // Also handle certificate verification modal
   const vModalEl = document.querySelector('.verification-modal');
   if (vModalEl) {
@@ -1700,7 +1336,7 @@ window.addEventListener('popstate', (event) => {
 // Certificate verification functionality
 document.addEventListener('DOMContentLoaded', () => {
   const certificateVerifyButtons = document.querySelectorAll('.certificate-verify');
-  
+
   // Certificate verification data (mock data for demonstration)
   const certificateData = {
     'codeacademy-001': {
@@ -1750,15 +1386,23 @@ document.addEventListener('DOMContentLoaded', () => {
       status: 'Valid',
       issuedDate: 'September 2025',
       expiryDate: 'No Expiration Date'
+    },
+    'playwright-001': {
+      title: 'Playwright 101 Certification',
+      issuer: 'TestMu AI',
+      verificationUrl: 'https://www.testmuai.com/certified/P101-3593BG/',
+      status: 'Valid',
+      issuedDate: 'March 2026',
+      expiryDate: 'March 2028'
     }
   };
-  
+
   certificateVerifyButtons.forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault();
       const certId = button.getAttribute('data-cert-id');
       const certInfo = certificateData[certId];
-      
+
       if (certInfo) {
         // Create verification popup/modal
         const verificationHtml = `
@@ -1815,7 +1459,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   transition: all 0.2s ease;
                 " onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">×</button>
               </div>
-              
+
               <div style="margin-bottom: 1.5rem;">
                 <div style="
                   display: flex;
@@ -1833,20 +1477,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-size: 1.1rem;
                   ">Certificate Verified ✓</span>
                 </div>
-                
+
                 <h4 style="
                   margin: 0 0 0.5rem 0;
                   color: #1f2937;
                   font-size: 1.25rem;
                   font-weight: 600;
                 ">${certInfo.title}</h4>
-                
+
                 <p style="
                   margin: 0 0 1rem 0;
                   color: #6366f1;
                   font-weight: 600;
                 ">Issued by: ${certInfo.issuer}</p>
-                
+
                 <div style="
                   background: #f8fafc;
                   padding: 1rem;
@@ -1854,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   margin-bottom: 1rem;
                 ">
                   <div style="margin-bottom: 0.5rem;">
-                    <strong style="color: #374151;">Status:</strong> 
+                    <strong style="color: #374151;">Status:</strong>
                     <span style="color: #10b981; font-weight: 600;">${certInfo.status}</span>
                   </div>
                   <div style="margin-bottom: 0.5rem;">
@@ -1864,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong style="color: #374151;">Expires:</strong> ${certInfo.expiryDate}
                   </div>
                 </div>
-                
+
                 <p style="
                   color: #6b7280;
                   font-size: 0.9rem;
@@ -1872,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   margin: 0;
                 ">This course completion certificate has been verified against the issuer's database. The credential is authentic and current.</p>
               </div>
-              
+
               <div style="
                 display: flex;
                 gap: 1rem;
@@ -1918,7 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
         `;
-        
+
         // Add modal to page
         document.body.insertAdjacentHTML('beforeend', verificationHtml);
 
