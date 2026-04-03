@@ -788,6 +788,376 @@ window.addEventListener('resize', () => {
 
 console.log('Portfolio loaded successfully! ✨');
 
+// ============================================
+// AI CHATBOT - Gemini Integration
+// ============================================
+const initChatbot = () => {
+  const fab = document.getElementById('chatbotFab');
+  const chatWindow = document.getElementById('chatbotWindow');
+  const closeBtn = document.getElementById('chatbotClose');
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const input = document.getElementById('chatbotInput');
+  const sendBtn = document.getElementById('chatbotSend');
+  const starterBtns = document.querySelectorAll('.chatbot-starter-btn');
+
+  if (!fab || !chatWindow) return;
+
+  const backdrop = document.getElementById('chatbotBackdrop');
+
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+  // Portfolio knowledge base - system context for AI
+  const PORTFOLIO_CONTEXT = `You are Soumadip Basu's friendly and professional AI portfolio assistant. Answer questions about Soumadip based ONLY on the information below. Be conversational, helpful, and concise. Use bullet points for lists. If someone asks something outside this data, politely redirect them to the portfolio or suggest contacting Soumadip directly.
+
+=== PERSONAL INFO ===
+Name: Soumadip Basu
+Title: Full Stack QA Professional
+Location: Bengaluru, India
+Email: soumadipbasu333@gmail.com
+Phone: +91 9851824880
+LinkedIn: linkedin.com/in/soumadip-basu-b47160197/
+GitHub: github.com/soumadipbasupersonalgithub
+
+=== EDUCATION ===
+Degree: Bachelor's & Diploma in Electronics & Communications Engineering
+University: Maulana Abul Kalam Azad University of Technology (MAKAUT)
+Year: 2017
+
+=== CAREER EXPERIENCE (6+ years, 3 companies, 20+ projects) ===
+
+1. Deloitte (2021 - Present) — Consultant & Ex Analyst
+   - Develops sophisticated automation solutions
+   - Integrates cutting-edge Generative AI technologies for intelligent test case generation, synthetic data creation, and workflow optimization
+   - Drafts comprehensive testing protocols for healthcare SDK supporting medicine tracking and smart device connectivity
+   - Led end-to-end QA validation of Bluetooth Low Energy (BLE) communication
+   - Developed automation test scripts for cross-platform compatibility across iOS and Android
+   - QA for Healthcare Mobile Suite (Madelyn, Hypercare, Logbook applications)
+   - Built automation frameworks using JavaScript, Appium, and WebDriverIO
+   - QA for enterprise healthcare web platform (Dotcom) built on Adobe Experience Manager
+   - Conducted WCAG accessibility compliance testing
+   - Introduced AI agent-driven automation with MCP server integration
+
+2. Alethea Communication Pvt Ltd (2020 - 2021) — QA Automation Engineer
+   - Built robust automation framework from scratch using Python and Robot Framework
+   - Developed performance testing suite using Python and Locust
+   - Worked on Cloud ATF — advanced automated solution for WLAN and broadband technologies
+   - Engineered scalable infrastructure for WiFi 6 protocol validation
+   - Also worked on SMS Autosense — ML-driven industrial monitoring mobile app
+   - Updated automation code in JavaScript using Katalon Studio
+
+3. Sonim Technologies (2019 - 2020) — QA Engineer
+   - Comprehensive functional testing of rugged Android smartphones (XP8 & XP5)
+   - Tested multiple US mobile device variants
+   - Executed functional and sprint testing for industrial-grade mobile devices
+   - Testing areas: Bluetooth, Satellite Network, GPS, Camera, Audio
+
+=== TECHNICAL SKILLS ===
+Test Automation: Playwright, WebdriverIO, Robot Framework, Appium, Selenium, Katalon Studio
+Programming Languages: JavaScript, Python, TypeScript
+Mobile & Web Testing: Cross-platform testing, API testing, UI/UX validation
+Quality Assurance: Test Strategy, Planning, Risk Analysis, Defect Management, SDLC & STLC Process Optimization
+Specialized Testing: Gen AI integration with MCP in testing process, Prompt Engineering, Automation, Performance, Functional, Accessibility
+Collaboration Tools: JIRA, Git, Bugzilla, TestRail, Confluence
+
+=== PROJECTS (6 major projects) ===
+1. SDK Validation Framework (Deloitte) — Backend SDK for patient-facing healthcare apps, BLE connectivity, medicine record synchronization
+2. Hypercare, Madelyn & Logbook (Deloitte) — Healthcare mobile suite for medicine records and patient health monitoring
+3. Dotcom (Deloitte) — Enterprise healthcare web portal on AEM for patients to access health services info, AI agent-driven automation with MCP
+4. Cloud ATF (Alethea) — Automated solution for WLAN and broadband testing with WiFi 6 protocol validation
+5. SMS Autosense (Alethea) — ML-driven mobile app for industrial machine condition health monitoring
+6. XP8 & XP5 (Sonim) — Rugged Android smartphones testing for extreme industrial conditions
+
+=== PROFESSIONAL CERTIFICATIONS (7 total) ===
+1. Playwright 101 Certification — TestMu AI (March 2026, Valid until March 2028)
+2. Learn JavaScript — Codecademy (June 2023)
+3. Robot Framework with Python-Selenium API Automation Testing — Udemy (May 2024)
+4. Learn Python 3 — Codecademy (April 2024)
+5. WebDriverIO + Node.js JavaScript UI Automation from Scratch — Udemy (June 2023)
+6. Learn Git & GitHub Course — Codecademy (May 2024)
+7. Gen AI and AI agent integration in software testing — Udemy (September 2025)
+
+=== RESPONSE GUIDELINES ===
+- Be friendly, conversational, and professional
+- Keep responses concise (3-6 sentences for simple questions, bullet points for detailed ones)
+- When asked for a portfolio summary or brief overview, provide a comprehensive professional summary covering background, experience, skills, education, projects, certifications, and contact info in a clear and well-structured manner
+- Always stay within the provided information — do not invent or assume extra details
+- When asked about contacting, always mention email and phone, and suggest using the contact form on the portfolio
+- Highlight key strengths: 6+ years experience, automation expertise, Gen AI integration, healthcare domain knowledge
+- If asked about something not in the data, say: "I don't have that specific information, but you can reach out to Soumadip directly or explore the portfolio sections for more details!"`;
+
+  let conversationHistory = [];
+  let isOpen = false;
+
+  // Toggle chat window with animation
+  const openChat = () => {
+    isOpen = true;
+    fab.classList.add('hidden');
+    document.body.classList.add('chatbot-open');
+    if (backdrop) backdrop.classList.add('visible');
+
+    // Trigger open animation
+    chatWindow.classList.remove('closing');
+    chatWindow.classList.add('opening');
+    chatWindow.style.visibility = 'visible';
+
+    chatWindow.addEventListener('animationend', function handler() {
+      chatWindow.removeEventListener('animationend', handler);
+      chatWindow.classList.remove('opening');
+      chatWindow.classList.add('open');
+    });
+
+    setTimeout(() => input.focus(), 500);
+  };
+
+  const closeChat = () => {
+    isOpen = false;
+    document.body.classList.remove('chatbot-open');
+    if (backdrop) backdrop.classList.remove('visible');
+
+    chatWindow.classList.remove('open');
+    chatWindow.classList.add('closing');
+
+    chatWindow.addEventListener('animationend', function handler() {
+      chatWindow.removeEventListener('animationend', handler);
+      chatWindow.classList.remove('closing');
+      chatWindow.style.visibility = 'hidden';
+      fab.classList.remove('hidden');
+    });
+  };
+
+  const toggleChat = () => {
+    if (isOpen) closeChat();
+    else openChat();
+  };
+
+  fab.addEventListener('click', openChat);
+  closeBtn.addEventListener('click', closeChat);
+  if (backdrop) backdrop.addEventListener('click', closeChat);
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen) closeChat();
+  });
+
+  // Prevent scroll bleed — stop wheel/touch on chatbot from scrolling the page
+  chatWindow.addEventListener('wheel', (e) => {
+    const el = messagesContainer;
+    const atTop = el.scrollTop === 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  let touchStartY = 0;
+  chatWindow.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  chatWindow.addEventListener('touchmove', (e) => {
+    const el = messagesContainer;
+    const touchY = e.touches[0].clientY;
+    const delta = touchStartY - touchY;
+    const atTop = el.scrollTop === 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    if ((atTop && delta < 0) || (atBottom && delta > 0)) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Remove welcome text when conversation starts (starters stay)
+  const clearWelcomeScreen = () => {
+    const welcome = messagesContainer.querySelector('.chatbot-welcome');
+    if (welcome) welcome.remove();
+  };
+
+  // Add message bubble
+  const addMessage = (text, type) => {
+    const msg = document.createElement('div');
+    msg.className = `chatbot-msg ${type}`;
+    msg.innerHTML = text;
+    messagesContainer.appendChild(msg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return msg;
+  };
+
+  // Show typing indicator
+  const showTyping = () => {
+    const typing = document.createElement('div');
+    typing.className = 'chatbot-typing';
+    typing.id = 'chatbotTyping';
+    typing.innerHTML = '<span class="chatbot-typing-dot"></span><span class="chatbot-typing-dot"></span><span class="chatbot-typing-dot"></span>';
+    messagesContainer.appendChild(typing);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  };
+
+  const removeTyping = () => {
+    const typing = document.getElementById('chatbotTyping');
+    if (typing) typing.remove();
+  };
+
+  // Format AI response (basic markdown to HTML)
+  const formatResponse = (text) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^[-•]\s+(.+)/gm, '<br>&bull; $1')
+      .replace(/^\d+\.\s+(.+)/gm, '<br>$1')
+      .replace(/\n{2,}/g, '<br><br>')
+      .replace(/\n/g, '<br>')
+      .trim();
+  };
+
+  // Models to try in order (fallback chain)
+  const GEMINI_MODELS = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite'
+  ];
+  const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+  // Helper: delay for retry
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Call a single model with retry
+  const callModel = async (model, requestBody) => {
+    const url = `${API_BASE}/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (response.status === 429) {
+      const err = new Error('RATE_LIMITED');
+      err.status = 429;
+      throw err;
+    }
+
+    if (!response.ok) {
+      const err = new Error(`API_ERROR_${response.status}`);
+      err.status = response.status;
+      throw err;
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  };
+
+  // Call Gemini with model fallback + retry logic
+  const callGemini = async (userMessage) => {
+    if (!GEMINI_API_KEY) {
+      return 'The AI assistant is currently unavailable. Please contact Soumadip directly at soumadipbasu333@gmail.com';
+    }
+
+    conversationHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+
+    const requestBody = {
+      contents: [
+        { role: 'user', parts: [{ text: PORTFOLIO_CONTEXT }] },
+        { role: 'model', parts: [{ text: 'Understood! I am Soumadip Basu\'s AI portfolio assistant. I will answer questions based on his portfolio information in a friendly and professional manner. How can I help you?' }] },
+        ...conversationHistory
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 8192
+      }
+    };
+
+    let lastError = null;
+
+    // Try each model in the fallback chain
+    for (const model of GEMINI_MODELS) {
+      // Retry each model up to 2 times with backoff
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const aiText = await callModel(model, requestBody);
+          if (aiText) {
+            conversationHistory.push({ role: 'model', parts: [{ text: aiText }] });
+            if (conversationHistory.length > 20) {
+              conversationHistory = conversationHistory.slice(-20);
+            }
+            return aiText;
+          }
+        } catch (err) {
+          lastError = err;
+          if (err.status === 429 && attempt === 0) {
+            // Wait before retry on rate limit
+            await wait(3000);
+            continue;
+          }
+          // Move to next model on rate limit, or throw on other errors
+          if (err.status === 429) break;
+          throw err;
+        }
+      }
+    }
+
+    // All models rate-limited
+    if (lastError?.status === 429) {
+      const rateErr = new Error('ALL_MODELS_RATE_LIMITED');
+      rateErr.isRateLimit = true;
+      throw rateErr;
+    }
+
+    throw lastError || new Error('No response generated');
+  };
+
+  // Send message handler
+  const sendMessage = async (text) => {
+    const message = text || input.value.trim();
+    if (!message) return;
+
+    clearWelcomeScreen();
+    addMessage(message, 'user');
+    input.value = '';
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const response = await callGemini(message);
+      removeTyping();
+      addMessage(formatResponse(response), 'bot');
+    } catch (error) {
+      console.error('Chatbot error:', error);
+      removeTyping();
+      if (error.isRateLimit) {
+        addMessage('I\'m getting a lot of traffic right now! Please wait a minute and try again. In the meantime, feel free to explore the portfolio sections above or contact Soumadip at <strong>soumadipbasu333@gmail.com</strong>', 'error');
+      } else {
+        addMessage('Sorry, I encountered an error. Please try again or contact Soumadip directly at <strong>soumadipbasu333@gmail.com</strong>', 'error');
+      }
+      // Roll back the user message from conversation history so retries work cleanly
+      if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].role === 'user') {
+        conversationHistory.pop();
+      }
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  };
+
+  // Event listeners
+  sendBtn.addEventListener('click', () => sendMessage());
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Conversation starter buttons
+  starterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const question = btn.getAttribute('data-question');
+      sendMessage(question);
+    });
+  });
+};
+
+initChatbot();
+
 // Debug function for mobile testing
 window.debugMobileForm = function() {
   const form = document.querySelector('.contact-form');
