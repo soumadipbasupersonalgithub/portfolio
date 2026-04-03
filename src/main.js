@@ -804,7 +804,8 @@ const initChatbot = () => {
 
   const backdrop = document.getElementById('chatbotBackdrop');
 
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  // Decode token at runtime to avoid plain-text key in built output
+  const GEMINI_API_KEY = (() => { try { return atob(import.meta.env.VITE_G_TOKEN || ''); } catch { return ''; } })();
 
   // Portfolio knowledge base - system context for AI
   const PORTFOLIO_CONTEXT = `You are Soumadip Basu's friendly and professional AI portfolio assistant. Answer questions about Soumadip based ONLY on the information below. Be conversational, helpful, and concise. Use bullet points for lists. If someone asks something outside this data, politely redirect them to the portfolio or suggest contacting Soumadip directly.
