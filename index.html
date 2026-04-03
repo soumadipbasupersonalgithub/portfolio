@@ -16,8 +16,8 @@
         document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>
-    <script type="module" crossorigin src="/portfolio/assets/index-CtVS49K9.js"></script>
-    <link rel="stylesheet" crossorigin href="/portfolio/assets/index-BgBqbZn3.css">
+    <script type="module" crossorigin src="/portfolio/assets/index-CXV8LVn2.js"></script>
+    <link rel="stylesheet" crossorigin href="/portfolio/assets/index-DH_4anWM.css">
   </head>
   <body>
     <!-- Navigation -->
@@ -849,6 +849,111 @@
         <polyline points="18 15 12 9 6 15"/>
       </svg>
     </button>
+
+    <!-- AI Chatbot Widget -->
+    <div class="chatbot-fab" id="chatbotFab" aria-label="Open AI Assistant">
+      <div class="chatbot-fab-pulse"></div>
+      <div class="chatbot-fab-icon-wrap">
+        <img src="/portfolio/download.webp" alt="AI Chat" class="chatbot-fab-img" width="42" height="42" />
+      </div>
+      <span class="chatbot-fab-badge">AI</span>
+    </div>
+
+    <!-- Chatbot backdrop overlay for mobile -->
+    <div class="chatbot-backdrop" id="chatbotBackdrop"></div>
+
+    <div class="chatbot-window" id="chatbotWindow">
+      <div class="chatbot-header">
+        <div class="chatbot-header-info">
+          <div class="chatbot-avatar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100" fill="none">
+              <rect x="18" y="28" width="64" height="42" rx="21" fill="rgba(255,255,255,0.9)"/>
+              <polygon points="30,70 22,82 42,70" fill="rgba(255,255,255,0.9)"/>
+              <circle cx="38" cy="48" r="5" fill="#6366f1"/>
+              <circle cx="62" cy="48" r="5" fill="#6366f1"/>
+              <path d="M42 57 Q50 63 58 57" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <line x1="50" y1="28" x2="50" y2="20" stroke="rgba(255,255,255,0.9)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="50" cy="16" r="3.5" fill="rgba(255,255,255,0.9)"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="chatbot-header-title">AI Assistant</h4>
+            <span class="chatbot-header-status">
+              <span class="chatbot-status-dot"></span>
+              Powered by Gemini
+            </span>
+          </div>
+        </div>
+        <button class="chatbot-close" id="chatbotClose" aria-label="Close chat">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="chatbot-messages" id="chatbotMessages">
+        <div class="chatbot-welcome">
+          <div class="chatbot-welcome-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 100 100" fill="none">
+              <rect x="18" y="28" width="64" height="42" rx="21" fill="#fff"/>
+              <polygon points="30,70 22,82 42,70" fill="#fff"/>
+              <circle cx="38" cy="48" r="6" fill="#6366f1"/>
+              <circle cx="40" cy="46" r="2" fill="#fff"/>
+              <circle cx="62" cy="48" r="6" fill="#6366f1"/>
+              <circle cx="64" cy="46" r="2" fill="#fff"/>
+              <path d="M42 57 Q50 64 58 57" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <line x1="50" y1="28" x2="50" y2="18" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="50" cy="14" r="4" fill="#c7d2fe"/>
+              <path d="M76 22l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#fff" opacity="0.9"/>
+            </svg>
+          </div>
+          <h3 class="chatbot-welcome-title">Hi! I'm Soumadip's AI Assistant</h3>
+          <p class="chatbot-welcome-text">Ask me anything about Soumadip's experience, skills, projects, or certifications!</p>
+        </div>
+      </div>
+
+      <!-- Persistent conversation starters -->
+      <div class="chatbot-starters" id="chatbotStarters">
+        <button class="chatbot-starter-btn" data-question="What are Soumadip's technical skills and tools expertise?">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Skills & Expertise
+        </button>
+        <button class="chatbot-starter-btn" data-question="What is Soumadip's educational background?">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 2 6 2s6-.9 6-2v-5"/></svg>
+          Education
+        </button>
+        <button class="chatbot-starter-btn" data-question="How many successful projects has Soumadip handled and what are they about?">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Projects
+        </button>
+        <button class="chatbot-starter-btn" data-question="How can I contact Soumadip? What are his contact details?">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Contact
+        </button>
+        <button class="chatbot-starter-btn" data-question="What professional certifications does Soumadip hold?">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Certifications
+        </button>
+        <button class="chatbot-starter-btn" data-question="A brief summary of the Portfolio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Portfolio Summary
+        </button>
+      </div>
+
+      <div class="chatbot-input-area">
+        <div class="chatbot-input-wrapper">
+          <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ask me about Soumadip..." autocomplete="off" />
+          <button class="chatbot-send" id="chatbotSend" aria-label="Send message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <span class="chatbot-disclaimer">AI-powered responses based on portfolio data</span>
+      </div>
+    </div>
 
   </body>
 </html>
