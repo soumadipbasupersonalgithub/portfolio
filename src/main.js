@@ -211,9 +211,20 @@ window.addEventListener('scroll', () => {
 });
 
 // Mobile menu toggle
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('active');
-  navMenu.classList.toggle('active');
+const toggleMobileMenu = () => {
+  const isOpen = hamburger.classList.toggle('active');
+  navMenu.classList.toggle('active', isOpen);
+  hamburger.setAttribute('aria-expanded', String(isOpen));
+};
+
+hamburger.addEventListener('click', toggleMobileMenu);
+
+// Keyboard support (Enter / Space) since the toggle is a non-button element
+hamburger.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleMobileMenu();
+  }
 });
 
 // Close mobile menu when clicking on a link
@@ -227,6 +238,7 @@ navLinks.forEach(link => {
     // Close mobile menu
     hamburger.classList.remove('active');
     navMenu.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
 
     if (targetSection) {
       // Brief delay so menu closes before scroll calculation
@@ -559,6 +571,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     hamburger.classList.remove('active');
     navMenu.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
   }
 });
 

@@ -18,13 +18,14 @@
     </script>
   </head>
   <body>
+    <a href="#home" class="skip-link">Skip to content</a>
     <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-logo">
           <span class="logo-text">Portfolio</span>
         </div>
-        <ul class="nav-menu">
+        <ul class="nav-menu" id="navMenu">
           <li class="nav-item">
             <a href="#home" class="nav-link">Home</a>
           </li>
@@ -61,7 +62,7 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           </button>
-          <div class="hamburger">
+          <div class="hamburger" role="button" tabindex="0" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navMenu">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
