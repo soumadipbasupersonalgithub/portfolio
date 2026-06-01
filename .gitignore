@@ -17,6 +17,9 @@ dist-ssr
 .env.local
 .env.*
 
+# Local screenshot/QA tooling (not part of the site)
+.shots
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
